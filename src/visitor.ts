@@ -1,3 +1,4 @@
+import { List } from "immutable"
 import { ParserRuleContext } from "antlr4"
 import { TerminalNode } from "antlr4/tree/Tree"
 
@@ -77,7 +78,6 @@ import {
   BlockStmt
 } from "./node/statement_nodes"
 import { PackageClause, ImportClause } from "./node/clause_nodes"
-import { List } from "immutable"
 
 const locFromTerminal = (node: TerminalNode) =>
   new NodePosition({ start: node.getSymbol(), end: node.getSymbol() })
@@ -313,7 +313,9 @@ class Visitor extends JoggerVisitor {
 
     const isImportAll = exposingClause === true
 
-    const exposing = (isImportAll ? [] : exposingClause) as List<IBaseNode>
+    const exposing = (isImportAll ? List<IBaseNode>() : exposingClause) as List<
+      IBaseNode
+    >
 
     return new ImportClause({
       loc: locFromCtx(ctx),
@@ -487,7 +489,7 @@ class Visitor extends JoggerVisitor {
   visitSymbolOrRecord(ctx: ISymbolOrRecordContext) {
     const sym = this.makeSymbol(ctx.SYMBOL())
 
-    if (ctx.recordFields() != null) {
+    if (ctx.recordFields()) {
       return new RecordExpr({
         name: sym,
         loc: locFromCtx(ctx),
@@ -553,6 +555,8 @@ class Visitor extends JoggerVisitor {
     return ctx
       .primitive()
       .map(prim => this.visitPrimitive(prim))
-      .reduce((left, right) => new AccessOp({ loc: null, left, right }))
+      .reduce(
+        (left, right) => new AccessOp({ loc: locFromCtx(ctx), left, right })
+      )
   }
 }
