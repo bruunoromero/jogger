@@ -2,7 +2,13 @@ import { List } from "immutable"
 import { ParserRuleContext } from "antlr4"
 import { TerminalNode } from "antlr4/tree/Tree"
 
-import { JoggerVisitor } from "./Parser/JoggerVisitor"
+import { JoggerVisitor } from "./parser/JoggerVisitor"
+import {
+  AsClauseContext,
+  RecordFieldContext,
+  MatchClauseContext,
+  ExprStmtContext
+} from "./parser/JoggerParser"
 import { BinOp, AccessOp } from "./node/binary_operator"
 import {
   SymbolExpr,
@@ -28,11 +34,17 @@ import {
   FnType
 } from "./node/type_nodes"
 import {
-  AsClauseContext,
-  RecordFieldContext,
-  MatchClauseContext,
-  ExprStmtContext
-} from "./parser/JoggerParser"
+  ExprStmt,
+  ModuleStmt,
+  DeclStmt,
+  FnDeclStmt,
+  DataDeclStmt,
+  TypeDeclStmt,
+  TypeCtor,
+  BlockStmt
+} from "./node/statement_nodes"
+import { PackageClause, ImportClause } from "./node/clause_nodes"
+
 import {
   IParametersContext,
   IParameterListContext,
@@ -67,17 +79,6 @@ import {
   IPackageClauseContext,
   IImportClauseContext
 } from "./context_types"
-import {
-  ExprStmt,
-  ModuleStmt,
-  DeclStmt,
-  FnDeclStmt,
-  DataDeclStmt,
-  TypeDeclStmt,
-  TypeCtor,
-  BlockStmt
-} from "./node/statement_nodes"
-import { PackageClause, ImportClause } from "./node/clause_nodes"
 
 const locFromTerminal = (node: TerminalNode) =>
   new NodePosition({ start: node.getSymbol(), end: node.getSymbol() })
