@@ -1,0 +1,24 @@
+{
+  "name": "jogger-node",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn generate-parser && npx tsc",
+    "generate-parser": "antlr4-tool -o src/parser antlr/Jogger.g4"
+  },
+  "dependencies": {
+    "antlr4": "^4.8.0",
+    "antlr4-tool": "^1.0.26",
+    "immutable": "^4.0.0-rc.12",
+    "ramda": "^0.27.0",
+    "tsort": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/antlr4": "^4.7.0",
+    "jest": "^25.1.0",
+    "ts-jest": "^25.2.1",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3"
+  }
+}

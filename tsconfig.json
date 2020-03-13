@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      "incremental": true,
+      "target": "es5",
+      "lib": ["esnext", "dom"],
+      "module": "commonjs",
+      "allowJs": true,
+      "outDir": "./dist",
+      "sourceMap": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "**/*.test.ts"]
+  }
