@@ -1,0 +1,19 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:latest",
+    "tslint-immutable",
+    "tslint-eslint-rules",
+    "tslint-config-prettier"
+  ],
+  "jsRules": {},
+  "linterOptions": {
+    "exclude": ["dist", "src/parser/*.ts"]
+  },
+  "rules": {
+    "no-console": false,
+    "max-classes-per-file": false,
+    "no-submodule-imports": [true, "antlr4"]
+  },
+  "rulesDirectory": []
+}

@@ -86,7 +86,7 @@ const locFromTerminal = (node: TerminalNode) =>
 const locFromCtx = (ctx: ParserRuleContext) =>
   new NodePosition({ start: ctx.start, end: ctx.stop })
 
-class Visitor extends JoggerVisitor {
+export class Visitor extends JoggerVisitor {
   visit: (ctx: ParserRuleContext) => IBaseNode
 
   constructor() {
@@ -170,7 +170,7 @@ class Visitor extends JoggerVisitor {
   makeInt(sym: TerminalNode): IntLiteral {
     return new IntLiteral({
       loc: locFromTerminal(sym),
-      value: parseInt(sym.getText())
+      value: parseInt(sym.getText(), 10)
     })
   }
 

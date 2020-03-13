@@ -5,6 +5,8 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn generate-parser && npx tsc",
+    "lint": "npx tslint -c tslint.json 'src/**/*.ts'",
+    "lint:fix": "npx tslint --fix -c tslint.json 'src/**/*.ts'",
     "generate-parser": "antlr4-tool -o src/parser antlr/Jogger.g4"
   },
   "dependencies": {
@@ -17,8 +19,13 @@
   "devDependencies": {
     "@types/antlr4": "^4.7.0",
     "jest": "^25.1.0",
+    "prettier": "1.19.1",
     "ts-jest": "^25.2.1",
     "ts-node": "^8.6.2",
+    "tslint": "^6.1.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "tslint-immutable": "^6.0.1",
     "typescript": "^3.8.3"
   }
 }
