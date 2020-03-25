@@ -14,10 +14,12 @@
     "antlr4-tool": "^1.0.26",
     "immutable": "^4.0.0-rc.12",
     "ramda": "^0.27.0",
-    "tsort": "^0.0.1"
+    "tsort": "^0.0.1",
+    "typescript-monads": "^3.16.0"
   },
   "devDependencies": {
     "@types/antlr4": "^4.7.0",
+    "@types/node": "^13.9.2",
     "jest": "^25.1.0",
     "prettier": "1.19.1",
     "ts-jest": "^25.2.1",

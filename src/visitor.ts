@@ -23,27 +23,37 @@ import {
   IfExpr,
   MatchExpr,
   MatchClause,
-  FnExpr
+  FnExpr,
+  Expr
 } from "./node/expression_nodes"
-import { IBaseNode, NodePosition, NodeUtils, NodeType } from "./node/base_nodes"
+
+import {
+  IBaseNode,
+  NodePosition,
+  NodeUtils,
+  NodeType,
+  Program
+} from "./node/base_nodes"
 import {
   GenericType,
   Parameter,
   ConcreteType,
   AbstractType,
-  FnType
+  FnType,
+  TypeNode
 } from "./node/type_nodes"
 import {
   ExprStmt,
-  ModuleStmt,
   DeclStmt,
   FnDeclStmt,
   DataDeclStmt,
   TypeDeclStmt,
   TypeCtor,
-  BlockStmt
+  BlockStmt,
+  RootStmtNode,
+  StmtNode
 } from "./node/statement_nodes"
-import { PackageClause, ImportClause } from "./node/clause_nodes"
+import { ModuleClause, ImportClause } from "./node/clause_nodes"
 
 import {
   IParametersContext,
@@ -51,7 +61,6 @@ import {
   IParameterTypeParamsContext,
   IGenericParamsContext,
   IExposingClauseContext,
-  IModuleStmtContext,
   IIfExprContext,
   IMatchExprContext,
   IFnDeclStmtContext,
@@ -65,7 +74,6 @@ import {
   IRecordFieldsContext,
   IListContext,
   IFnExpressionContext,
-  IAccessContext,
   IStmtContext,
   ISymbolOrRecordContext,
   IBasicTypeContext,
@@ -76,14 +84,17 @@ import {
   IParameterContext,
   IDeclStmtContext,
   ISymbolAccessContext,
-  IPackageClauseContext,
-  IImportClauseContext
+  IModuleClauseContext,
+  IImportClauseContext,
+  IJoggerContext,
+  IAccessExprContext,
+  IRootStmtContext
 } from "./context_types"
 
 const locFromTerminal = (node: TerminalNode) =>
   new NodePosition({ start: node.getSymbol(), end: node.getSymbol() })
 
-const locFromCtx = (ctx: ParserRuleContext) =>
+export const locFromCtx = (ctx: ParserRuleContext) =>
   new NodePosition({ start: ctx.start, end: ctx.stop })
 
 export class Visitor extends JoggerVisitor {
@@ -98,21 +109,21 @@ export class Visitor extends JoggerVisitor {
 
   makeOpVisitors() {
     for (let i = 2; i < 8; i++) {
-      this[`visitOp${i}`] = this.makeVisitorFromOp(i)
+      this[`visitOperatorExpr${i}`] = this.makeVisitorFromOp(i)
     }
 
     this.visitExpr = this.makeVisitorFromOp(8)
-    this.visitOp1 = this.makeVisitOp("access", 1)
+    this.visitOperatorExpr1 = this.makeVisitOp("accessExpr", 1)
   }
 
   makeVisitorFromOp(op: number) {
-    return this.makeVisitOp(`op${op - 1}`, op)
+    return this.makeVisitOp(`operatorExpr${op - 1}`, op)
   }
 
   makeVisitOp(child: string, op: number) {
     return (ctx: ParserRuleContext) => {
       if (ctx.getChildCount() > 1) {
-        return this.visitOperator(ctx, ctx[child](), ctx[`OP${op}`](0))
+        return this.visitOperator(ctx, ctx[child](), ctx[`operator${op}`](0))
       } else {
         return this.visit(ctx[child](0))
       }
@@ -122,25 +133,25 @@ export class Visitor extends JoggerVisitor {
   visitOperator(
     ctx: ParserRuleContext,
     nodes: ParserRuleContext[],
-    op: TerminalNode
+    op: ParserRuleContext
   ) {
     return nodes
       .map(el => this.visit(el))
-      .reduce(
-        (left, right) =>
-          new BinOp({
-            loc: locFromCtx(ctx),
-            op: new SymbolExpr({
-              value: op.getText(),
-              loc: locFromTerminal(op)
-            }),
-            left,
-            right
-          })
-      )
+      .flat()
+      .reduce((left: any, right: any) => {
+        return new BinOp({
+          loc: locFromCtx(ctx),
+          op: new SymbolExpr({
+            value: op.getText(),
+            loc: locFromCtx(op)
+          }),
+          left,
+          right
+        })
+      })
   }
 
-  makeCall(callee: IBaseNode, ctxs: IParametersContext[]) {
+  makeCall(callee: Expr, ctxs: IParametersContext[]) {
     const currentCtx = ctxs[0]
 
     if (ctxs.length === 1) {
@@ -199,7 +210,7 @@ export class Visitor extends JoggerVisitor {
     return new GenericType({ loc: locFromTerminal(sym), name: sym.getText() })
   }
 
-  makeType(ctx: ParserRuleContext, node: IBaseNode, params: List<IBaseNode>) {
+  makeType(ctx: ParserRuleContext, node: IBaseNode, params: List<TypeNode>) {
     const genericParams = params.filter(p =>
       NodeUtils.isInstance(p, NodeType.GENERIC_TYPE)
     )
@@ -214,21 +225,39 @@ export class Visitor extends JoggerVisitor {
     return new AbstractType({ loc: locFromCtx(ctx), name: node, params })
   }
 
+  // MAIN
+
+  visitJogger(ctx: IJoggerContext): Program {
+    return new Program({
+      loc: locFromCtx(ctx),
+      module: this.visitModuleClause(ctx.moduleClause()),
+      stmts: List(ctx.rootStmt().map(it => this.visitRootStmt(it))),
+      imports: List(ctx.importClause().map(it => this.visitImportClause(it)))
+    })
+  }
+
   // PARAMETERS
 
-  visitSymbolAccess(ctx: ISymbolAccessContext): IBaseNode {
-    const symbols = ctx.SYMBOL().map(sym => this.makeSymbol(sym)) as IBaseNode[]
+  visitSymbolAccess(ctx: ISymbolAccessContext): AccessOp | SymbolExpr {
+    const symbols = ctx
+      .SYMBOL()
+      .map(sym => this.makeSymbol(sym)) as SymbolExpr[]
 
-    return symbols.reduce(
-      (left, right) => new AccessOp({ loc: locFromCtx(ctx), left, right })
-    )
+    if (symbols.length > 1) {
+      return symbols.reduce(
+        (left, right) =>
+          new AccessOp({ loc: locFromCtx(ctx), left, right }) as any
+      )
+    } else {
+      return symbols[0]
+    }
   }
 
   visitEmptytableUnnamedTypes(ctx: IEmptytableUnnamedTypesContext) {
     return List(ctx.parameterType().map(it => this.visitParameterType(it)))
   }
 
-  visitParameterType(ctx: IParameterTypeContext): IBaseNode {
+  visitParameterType(ctx: IParameterTypeContext): TypeNode {
     if (ctx.fnType()) {
       return this.visitFnType(ctx.fnType())
     } else if (ctx.basicType()) {
@@ -254,7 +283,7 @@ export class Visitor extends JoggerVisitor {
     return new ConcreteType({
       name: node,
       loc: locFromCtx(ctx),
-      params: List<IBaseNode>()
+      params: List<TypeNode>()
     })
   }
 
@@ -298,8 +327,8 @@ export class Visitor extends JoggerVisitor {
 
   // CLAUSES
 
-  visitPackageClause(ctx: IPackageClauseContext) {
-    return new PackageClause({
+  visitModuleClause(ctx: IModuleClauseContext) {
+    return new ModuleClause({
       loc: locFromCtx(ctx),
       name: this.visitSymbolAccess(ctx.symbolAccess())
     })
@@ -310,13 +339,13 @@ export class Visitor extends JoggerVisitor {
     const asStr = ctx.asClause() ? this.visitAsClause(ctx.asClause()) : null
     const exposingClause = ctx.exposingClause()
       ? this.visitExposingClause(ctx.exposingClause())
-      : List<IBaseNode>()
+      : List<SymbolExpr>()
 
     const isImportAll = exposingClause === true
 
-    const exposing = (isImportAll ? List<IBaseNode>() : exposingClause) as List<
-      IBaseNode
-    >
+    const exposing = (isImportAll
+      ? List<SymbolExpr>()
+      : exposingClause) as List<SymbolExpr>
 
     return new ImportClause({
       loc: locFromCtx(ctx),
@@ -341,32 +370,33 @@ export class Visitor extends JoggerVisitor {
 
   // STATEMENTS
 
-  visitStmt(ctx: IStmtContext): IBaseNode {
+  visitRootStmt(ctx: IRootStmtContext): RootStmtNode {
     if (ctx.exprStmt()) {
       return this.visitExprStmt(ctx.exprStmt())
     } else if (ctx.declStmt()) {
       return this.visitDeclStmt(ctx.declStmt())
     } else if (ctx.fnDeclStmt()) {
       return this.visitFnDeclStmt(ctx.fnDeclStmt())
-    } else if (ctx.moduleStmt()) {
-      return this.visitModuleStmt(ctx.moduleStmt())
     } else if (ctx.dataDeclStmt()) {
       return this.visitDataDeclStmt(ctx.dataDeclStmt())
     } else if (ctx.typeDeclStmt()) {
       return this.visitTypeDeclStmt(ctx.typeDeclStmt())
     } else {
-      return super.visitStmt(ctx)
+      return super.visitRootStmt(ctx)
     }
   }
 
-  visitModuleStmt(ctx: IModuleStmtContext): ModuleStmt {
-    return new ModuleStmt({
-      loc: locFromCtx(ctx),
-      name: this.makeSymbol(ctx.SYMBOL()),
-      stmts: List(ctx.stmt().map(it => this.visitStmt(it)))
-    })
+  visitStmt(ctx: IStmtContext): StmtNode {
+    if (ctx.exprStmt()) {
+      return this.visitExprStmt(ctx.exprStmt())
+    } else if (ctx.declStmt()) {
+      return this.visitDeclStmt(ctx.declStmt())
+    } else if (ctx.fnDeclStmt()) {
+      return this.visitFnDeclStmt(ctx.fnDeclStmt())
+    } else {
+      return super.visitStmt(ctx)
+    }
   }
-
   visitExprStmt(ctx: ExprStmtContext): ExprStmt {
     return new ExprStmt({
       loc: locFromCtx(ctx),
@@ -415,7 +445,9 @@ export class Visitor extends JoggerVisitor {
 
   visitTypeDeclStmt(ctx: ITypeDeclStmtContext) {
     const name = this.makeSymbol(ctx.SYMBOL())
-    const genericParams = this.visitGenericParams(ctx.genericParams())
+    const genericParams = ctx.genericParams()
+      ? this.visitGenericParams(ctx.genericParams())
+      : List()
     const constructors = this.visitTypeDeclCtors(ctx.typeDeclCtors())
 
     return new TypeDeclStmt({
@@ -456,7 +488,7 @@ export class Visitor extends JoggerVisitor {
   // EXPRESSIONS
 
   visitPrimitive(ctx: IPrimitiveContext) {
-    let node: IBaseNode
+    let node: Expr
 
     if (ctx.INT()) {
       node = this.makeInt(ctx.INT())
@@ -522,8 +554,8 @@ export class Visitor extends JoggerVisitor {
 
   visitIfExpr(ctx: IIfExprContext) {
     const cond = this.visitExpr(ctx.expr())
-    const truthy = this.visit(ctx.blockOrExpr(0))
-    const falsy = this.visit(ctx.blockOrExpr(1))
+    const truthy = this.visitBlockOrExpr(ctx.blockOrExpr(0))
+    const falsy = this.visitBlockOrExpr(ctx.blockOrExpr(1))
 
     return new IfExpr({ loc: locFromCtx(ctx), cond, truthy, falsy })
   }
@@ -552,7 +584,7 @@ export class Visitor extends JoggerVisitor {
     })
   }
 
-  visitAccess(ctx: IAccessContext): AccessOp {
+  visitAccess(ctx: IAccessExprContext): AccessOp {
     return ctx
       .primitive()
       .map(prim => this.visitPrimitive(prim))

@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
       "incremental": true,
-      "target": "es5",
+      "target": "es2017",
       "lib": ["esnext", "dom"],
-      "module": "commonjs",
+      "module": "CommonJS",
       "allowJs": true,
       "outDir": "./dist",
       "sourceMap": true

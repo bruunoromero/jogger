@@ -1,0 +1,5 @@
+module T.Teste
+
+let a = 10
+
+def testing(a: Int) = a + 2

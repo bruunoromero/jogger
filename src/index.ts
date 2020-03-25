@@ -1,16 +1,20 @@
 import * as Parser from "./parser"
-import { Dependency, Graph } from "./dependency"
 
-const tree = Parser.parse("package Main")
+import * as Ref from "./expander/ref"
+import * as Dependency from "./dependency"
+import * as OpToFn from "./expander/op_to_fn"
+import * as Currier from "./expander/currier"
+import { ProjectConfig } from "./project_config"
 
-const depA = new Dependency({ name: "a", value: 1 })
-const depB = new Dependency({ name: "b", value: 2 })
-const depC = new Dependency({ name: "c", value: 3 })
+const main = async () => {
+  const config = new ProjectConfig({ src: "./example" })
+  const files = await Parser.parseAll(config)
+  const graph = Dependency.makeGraph(files)
+  const expandedGraph = OpToFn.expandAll(graph)
+  const curriedGraph = Currier.expandAll(expandedGraph)
+  const refGraph = Ref.expandAll(curriedGraph)
 
-const graph = new Graph()
-  .addDependency(depA, depB)
-  .addDependency(depB, depC)
-  .sort()
-  .toJS()
+  console.log(refGraph.toJS())
+}
 
-console.log(graph)
+main()

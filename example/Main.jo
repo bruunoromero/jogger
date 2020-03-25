@@ -1,0 +1,7 @@
+module Main
+
+import List as L exposing (..)
+
+type Int = Int
+
+1 + 2 * 3

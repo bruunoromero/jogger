@@ -1,12 +1,34 @@
 import { IBaseNode, NodeType } from "./base_nodes"
 import { Record, List } from "immutable"
+import { BinOp, AccessOp } from "./binary_operator"
+import { BlockStmt } from "./statement_nodes"
+
+export type Expr =
+  | IntLiteral
+  | FloatLiteral
+  | CharLiteral
+  | StringLiteral
+  | SymbolExpr
+  | ListExpr
+  | FnExpr
+  | IfExpr
+  | MatchExpr
+  | CallExpr
+  | RecordExpr
+  | BinOp
+  | AccessOp
 
 export interface IPrimitive<T> extends IBaseNode {
   value: T
 }
 
 export class IntLiteral
-  extends Record({ loc: null, value: 0, nodeType: NodeType.INT_LITERAL })
+  extends Record<IPrimitive<number>>({
+    loc: null,
+    value: 0,
+    sym: Symbol(),
+    nodeType: NodeType.INT_LITERAL
+  })
   implements IPrimitive<number> {
   constructor(props: IPrimitive<number>) {
     super(props)
@@ -14,7 +36,12 @@ export class IntLiteral
 }
 
 export class FloatLiteral
-  extends Record({ loc: null, value: 0, nodeType: NodeType.FLOAT_LITERAL })
+  extends Record<IPrimitive<number>>({
+    loc: null,
+    value: 0,
+    sym: Symbol(),
+    nodeType: NodeType.FLOAT_LITERAL
+  })
   implements IPrimitive<number> {
   constructor(props: IPrimitive<number>) {
     super(props)
@@ -22,7 +49,12 @@ export class FloatLiteral
 }
 
 export class CharLiteral
-  extends Record({ loc: null, value: "", nodeType: NodeType.CHAR_LITERAL })
+  extends Record<IPrimitive<string>>({
+    loc: null,
+    value: "",
+    sym: Symbol(),
+    nodeType: NodeType.CHAR_LITERAL
+  })
   implements IPrimitive<string> {
   constructor(props: IPrimitive<string>) {
     super(props)
@@ -30,7 +62,12 @@ export class CharLiteral
 }
 
 export class StringLiteral
-  extends Record({ loc: null, value: "", nodeType: NodeType.CHAR_LITERAL })
+  extends Record<IPrimitive<string>>({
+    loc: null,
+    value: "",
+    sym: Symbol(),
+    nodeType: NodeType.CHAR_LITERAL
+  })
   implements IPrimitive<string> {
   constructor(props: IPrimitive<string>) {
     super(props)
@@ -38,33 +75,48 @@ export class StringLiteral
 }
 
 export class SymbolExpr
-  extends Record({ loc: null, value: "", nodeType: NodeType.SYMBOL_EXPR })
+  extends Record<IPrimitive<string>>({
+    loc: null,
+    value: "",
+    sym: Symbol(),
+    nodeType: NodeType.SYMBOL_EXPR
+  })
   implements IPrimitive<string> {
   constructor(props: IPrimitive<string>) {
     super(props)
   }
+
+  str() {
+    return this.value
+  }
 }
 
 export class ListExpr
-  extends Record({ loc: null, value: List(), nodeType: NodeType.LIST_EXPR })
-  implements IPrimitive<List<IBaseNode>> {
-  constructor(props: IPrimitive<List<IBaseNode>>) {
+  extends Record<IPrimitive<List<Expr>>>({
+    loc: null,
+    value: List(),
+    sym: Symbol(),
+    nodeType: NodeType.LIST_EXPR
+  })
+  implements IPrimitive<List<Expr>> {
+  constructor(props: IPrimitive<List<Expr>>) {
     super(props)
   }
 }
 
 export interface IFnExpr extends IBaseNode {
-  body: IBaseNode
+  body: Expr | BlockStmt
   params: List<IBaseNode>
   returnTypeSpec: IBaseNode | null
 }
 
 export class FnExpr
-  extends Record({
+  extends Record<IFnExpr>({
     loc: null,
     body: null,
     params: List(),
     returnTypeSpec: null,
+    sym: Symbol(),
     nodeType: NodeType.FN_EXPR
   })
   implements IFnExpr {
@@ -74,17 +126,18 @@ export class FnExpr
 }
 
 export interface IIfExpr extends IBaseNode {
-  cond: IBaseNode
-  truthy: IBaseNode
-  falsy: IBaseNode
+  cond: Expr
+  truthy: Expr | BlockStmt
+  falsy: Expr | BlockStmt
 }
 
 export class IfExpr
-  extends Record({
+  extends Record<IIfExpr>({
     loc: null,
     cond: null,
     truthy: null,
     falsy: null,
+    sym: Symbol(),
     nodeType: NodeType.IF_EXPR
   })
   implements IIfExpr {
@@ -94,15 +147,16 @@ export class IfExpr
 }
 
 export interface IMatchExpr extends IBaseNode {
-  matcher: IBaseNode
-  clauses: List<IBaseNode>
+  matcher: Expr
+  clauses: List<MatchClause>
 }
 
 export class MatchExpr
-  extends Record({
+  extends Record<IMatchExpr>({
     loc: null,
     matcher: null,
     clauses: List(),
+    sym: Symbol(),
     nodeType: NodeType.MATCH_EXPR
   })
   implements IMatchExpr {
@@ -112,15 +166,16 @@ export class MatchExpr
 }
 
 export interface IMatchClause extends IBaseNode {
-  cond: IBaseNode
-  truthy: IBaseNode
+  cond: Expr
+  truthy: Expr | BlockStmt
 }
 
 export class MatchClause
-  extends Record({
+  extends Record<IMatchClause>({
     loc: null,
     cond: null,
     truthy: null,
+    sym: Symbol(),
     nodeType: NodeType.MATCH_CLAUSE
   })
   implements IMatchClause {
@@ -130,15 +185,16 @@ export class MatchClause
 }
 
 export interface ICallExpr extends IBaseNode {
-  callee: IBaseNode
-  args: List<IBaseNode>
+  callee: Expr
+  args: List<Expr>
 }
 
 export class CallExpr
-  extends Record({
+  extends Record<ICallExpr>({
     loc: null,
     callee: null,
     args: List(),
+    sym: Symbol(),
     nodeType: NodeType.CALL_EXPR
   })
   implements ICallExpr {
@@ -149,14 +205,15 @@ export class CallExpr
 
 export interface IRecordExpr extends IBaseNode {
   name: IBaseNode
-  fields: List<IBaseNode>
+  fields: List<RecordField>
 }
 
 export class RecordExpr
-  extends Record({
+  extends Record<IRecordExpr>({
     loc: null,
     name: null,
     fields: List(),
+    sym: Symbol(),
     nodeType: NodeType.RECORD_EXPR
   })
   implements IRecordExpr {
@@ -166,15 +223,16 @@ export class RecordExpr
 }
 
 export interface IRecordField extends IBaseNode {
-  name: IBaseNode
-  value: IBaseNode
+  name: SymbolExpr
+  value: Expr
 }
 
 export class RecordField
-  extends Record({
+  extends Record<IRecordField>({
     loc: null,
     name: null,
     value: null,
+    sym: Symbol(),
     nodeType: NodeType.RECORD_FIELD
   })
   implements IRecordField {

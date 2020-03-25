@@ -7,7 +7,6 @@ import {
   ParameterListContext,
   ParametersContext,
   StmtContext,
-  ModuleStmtContext,
   IfExprContext,
   BlockOrExprContext,
   MatchExprContext,
@@ -24,7 +23,6 @@ import {
   RecordFieldsContext,
   RecordFieldContext,
   ListContext,
-  AccessContext,
   SymbolOrRecordContext,
   BasicTypeContext,
   EmptytableUnnamedTypesContext,
@@ -32,8 +30,11 @@ import {
   ParameterSpecContext,
   DeclStmtContext,
   SymbolAccessContext,
-  PackageClauseContext,
-  ImportClauseContext
+  ImportClauseContext,
+  JoggerContext,
+  AccessExprContext,
+  ModuleClauseContext,
+  RootStmtContext
 } from "./parser/JoggerParser"
 import { TerminalNode } from "antlr4/tree/Tree"
 
@@ -55,10 +56,6 @@ export interface IGenericParamsContext extends GenericParamsContext {
 
 export interface IExposingClauseContext extends ExposingClauseContext {
   SYMBOL(): TerminalNode[]
-}
-
-export interface IModuleStmtContext extends ModuleStmtContext {
-  stmt(): IStmtContext[]
 }
 
 export interface IIfExprContext extends IfExprContext {
@@ -122,14 +119,18 @@ export interface IFnExpressionContext extends FnExpressionContext {
   parameterSpec(): IParameterSpecContext
 }
 
-export interface IAccessContext extends AccessContext {
+export interface IAccessExprContext extends AccessExprContext {
   primitive(): IPrimitiveContext[]
 }
 
 export interface IStmtContext extends StmtContext {
   declStmt(): IDeclStmtContext
   fnDeclStmt(): IFnDeclStmtContext
-  moduleStmt(): IModuleStmtContext
+}
+
+export interface IRootStmtContext extends RootStmtContext {
+  declStmt(): IDeclStmtContext
+  fnDeclStmt(): IFnDeclStmtContext
   dataDeclStmt(): IDataDeclStmtContext
   typeDeclStmt(): ITypeDeclStmtContext
 }
@@ -174,11 +175,17 @@ export interface ISymbolAccessContext extends SymbolAccessContext {
   SYMBOL(): TerminalNode[]
 }
 
-export interface IPackageClauseContext extends PackageClauseContext {
+export interface IModuleClauseContext extends ModuleClauseContext {
   symbolAccess(): ISymbolAccessContext
 }
 
 export interface IImportClauseContext extends ImportClauseContext {
   symbolAccess(): ISymbolAccessContext
   exposingClause(): IExposingClauseContext
+}
+
+export interface IJoggerContext extends JoggerContext {
+  rootStmt(): IRootStmtContext[]
+  importClause(): IImportClauseContext[]
+  moduleClause(): IModuleClauseContext
 }

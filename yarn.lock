@@ -395,6 +395,11 @@
     "@types/istanbul-lib-coverage" "*"
     "@types/istanbul-lib-report" "*"
 
+"@types/node@^13.9.2":
+  version "13.9.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.9.2.tgz#ace1880c03594cc3e80206d96847157d8e7fa349"
+  integrity sha512-bnoqK579sAYrQbp73wwglccjJ4sfRdKU7WNEZ5FW4K2U6Kc0/eZ5kvXG0JKsEKFB50zrFmfFt52/cvBbZa7eXg==
+
 "@types/stack-utils@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
@@ -3495,6 +3500,11 @@ typedarray-to-buffer@^3.1.5:
   integrity sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
   dependencies:
     is-typedarray "^1.0.0"
+
+typescript-monads@^3.16.0:
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/typescript-monads/-/typescript-monads-3.16.0.tgz#8bab69b63a1f32c1fed72ba0167357c9d800a603"
+  integrity sha512-+n2GGVquzmzs82TA2iRmCYTHmnyRHmboT01Dlr4liJYBSuFnyUocoEU5VYQBL6JSK3GErl3Ge3oT2h1/MnzcMA==
 
 typescript@^3.8.3:
   version "3.8.3"

@@ -1,12 +1,19 @@
-import { NodePosition, NodeType, IBaseNode } from "./base_nodes"
+import { NodeType, IBaseNode } from "./base_nodes"
 import { Record, List } from "immutable"
+import { AccessOp } from "./binary_operator"
+import { SymbolExpr } from "./expression_nodes"
 
 export interface IPackageClause extends IBaseNode {
-  name: IBaseNode
+  name: AccessOp | SymbolExpr
 }
 
-export class PackageClause
-  extends Record({ loc: null, name: null, nodeType: NodeType.PACKAGE_CLAUSE })
+export class ModuleClause
+  extends Record<IPackageClause>({
+    loc: null,
+    name: null,
+    sym: Symbol(),
+    nodeType: NodeType.MODULE_CLAUSE
+  })
   implements IPackageClause {
   constructor(props: IPackageClause) {
     super(props)
@@ -14,17 +21,18 @@ export class PackageClause
 }
 
 export interface IImportClause extends IBaseNode {
-  name: IBaseNode
-  asStr?: IBaseNode
+  name: AccessOp | SymbolExpr
+  asStr?: SymbolExpr
   isImportAll: boolean
-  exposing: List<IBaseNode>
+  exposing: List<SymbolExpr>
 }
 
 export class ImportClause
-  extends Record({
+  extends Record<IImportClause>({
     loc: null,
     name: null,
     asStr: null,
+    sym: Symbol(),
     exposing: List(),
     isImportAll: false
   })

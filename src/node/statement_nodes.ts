@@ -1,36 +1,31 @@
 import { IBaseNode, NodeType } from "./base_nodes"
 import { Record, List } from "immutable"
+import { Expr, SymbolExpr } from "./expression_nodes"
+import { Parameter } from "./type_nodes"
 
-export interface IModuleStmt extends IBaseNode {
-  name: IBaseNode
-  stmts: List<IBaseNode>
-}
+export type RootStmtNode =
+  | DeclStmt
+  | FnDeclStmt
+  | DataDeclStmt
+  | TypeDeclStmt
+  | BlockStmt
+  | ExprStmt
 
-export class ModuleStmt
-  extends Record({
-    loc: null,
-    name: null,
-    stmts: List(),
-    nodeType: NodeType.MODULE_STMT
-  })
-  implements IModuleStmt {
-  constructor(props: IModuleStmt) {
-    super(props)
-  }
-}
+export type StmtNode = DeclStmt | FnDeclStmt | BlockStmt | ExprStmt
 
 export interface IDeclStmt extends IBaseNode {
-  name: IBaseNode
-  value: IBaseNode
+  name: SymbolExpr
+  value: Expr | BlockStmt
   typeSpec?: IBaseNode
 }
 
 export class DeclStmt
-  extends Record({
+  extends Record<IDeclStmt>({
     loc: null,
     name: null,
     value: null,
     typeSpec: null,
+    sym: Symbol(),
     nodeType: NodeType.DECL_STMT
   })
   implements IDeclStmt {
@@ -40,21 +35,22 @@ export class DeclStmt
 }
 
 export interface IFnDeclStmt extends IBaseNode {
-  name: IBaseNode
-  value: IBaseNode
+  name: SymbolExpr
+  value: Expr | BlockStmt
   params: List<IBaseNode>
   returnTypeSpec: IBaseNode
   genericParams: List<IBaseNode>
 }
 
 export class FnDeclStmt
-  extends Record({
+  extends Record<IFnDeclStmt>({
     loc: null,
     name: null,
     value: null,
     params: List(),
     returnTypeSpec: null,
     genericParams: List(),
+    sym: Symbol(),
     nodeType: NodeType.FN_DECL_STMT
   })
   implements IFnDeclStmt {
@@ -64,17 +60,18 @@ export class FnDeclStmt
 }
 
 export interface IDataDeclStmt extends IBaseNode {
-  name: IBaseNode
-  fields: List<IBaseNode>
+  name: SymbolExpr
+  fields: List<Parameter>
   genericParams: List<IBaseNode>
 }
 
 export class DataDeclStmt
-  extends Record({
+  extends Record<IDataDeclStmt>({
     loc: null,
     name: null,
     fields: List(),
     genericParams: List(),
+    sym: Symbol(),
     nodeType: NodeType.DATA_DECL_STMT
   })
   implements IDataDeclStmt {
@@ -84,17 +81,18 @@ export class DataDeclStmt
 }
 
 export interface ITypeDeclStmt extends IBaseNode {
-  name: IBaseNode
-  constructors: List<IBaseNode>
+  name: SymbolExpr
+  constructors: List<TypeCtor>
   genericParams: List<IBaseNode>
 }
 
 export class TypeDeclStmt
-  extends Record({
+  extends Record<ITypeDeclStmt>({
     loc: null,
     name: null,
     constructors: List(),
     genericParams: List(),
+    sym: Symbol(),
     nodeType: NodeType.TYPE_DECL_STMT
   })
   implements ITypeDeclStmt {
@@ -104,15 +102,16 @@ export class TypeDeclStmt
 }
 
 export interface ITypeCtor extends IBaseNode {
-  name: IBaseNode
+  name: SymbolExpr
   fields: List<IBaseNode>
 }
 
 export class TypeCtor
-  extends Record({
+  extends Record<ITypeCtor>({
     loc: null,
     name: null,
     fields: List(),
+    sym: Symbol(),
     nodeType: NodeType.TYPE_CTOR
   })
   implements ITypeCtor {
@@ -122,13 +121,14 @@ export class TypeCtor
 }
 
 export interface IBlockStmt extends IBaseNode {
-  nodes: List<IBaseNode>
+  nodes: List<StmtNode>
 }
 
 export class BlockStmt
-  extends Record({
+  extends Record<IBlockStmt>({
     loc: null,
     nodes: List(),
+    sym: Symbol(),
     nodeType: NodeType.BLOCK_STMT
   })
   implements IBlockStmt {
@@ -138,11 +138,16 @@ export class BlockStmt
 }
 
 export interface IExprStmt extends IBaseNode {
-  expr: IBaseNode
+  expr: Expr
 }
 
 export class ExprStmt
-  extends Record({ loc: null, expr: null, nodeType: NodeType.EXPR_STMT })
+  extends Record<IExprStmt>({
+    loc: null,
+    expr: null,
+    sym: Symbol(),
+    nodeType: NodeType.EXPR_STMT
+  })
   implements IExprStmt {
   constructor(props: IExprStmt) {
     super(props)

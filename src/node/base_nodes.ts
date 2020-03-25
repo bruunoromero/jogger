@@ -1,9 +1,10 @@
 import { Record, List } from "immutable"
 
 import { Token } from "antlr4"
+import { ModuleClause, ImportClause } from "./clause_nodes"
+import { RootStmtNode } from "./statement_nodes"
 
 export enum NodeType {
-  PACKAGE_CLAUSE,
   INT_LITERAL,
   FLOAT_LITERAL,
   CHAR_LITERAL,
@@ -19,7 +20,7 @@ export enum NodeType {
   FN_TYPE,
   EXPR_STMT,
   DECL_STMT,
-  MODULE_STMT,
+  MODULE_CLAUSE,
   FN_DECL_STMT,
   TYPE_DECL_STMT,
   TYPE_CTOR,
@@ -41,7 +42,8 @@ export interface INodePosition {
   end: Token
 }
 
-export class NodePosition extends Record({ start: null, end: null })
+export class NodePosition
+  extends Record<INodePosition>({ start: null, end: null })
   implements INodePosition {
   constructor(props: INodePosition) {
     super(props)
@@ -49,26 +51,27 @@ export class NodePosition extends Record({ start: null, end: null })
 }
 
 export interface IBaseNode {
+  sym?: Symbol
   loc: NodePosition
   nodeType?: NodeType
 }
 
-export interface IRootNode extends IBaseNode {
-  text: string
-  filename: string
-  nodes: List<IBaseNode>
+export interface IProgram extends IBaseNode {
+  module: ModuleClause
+  stmts: List<RootStmtNode>
+  imports: List<ImportClause>
 }
 
-export class RootNode
-  extends Record({
+export class Program
+  extends Record<IProgram>({
     loc: null,
-    nodeType: NodeType.ROOT,
-    filename: "",
-    text: "",
-    nodes: List()
+    module: null,
+    sym: Symbol(),
+    stmts: List<RootStmtNode>(),
+    imports: List<ImportClause>()
   })
-  implements IRootNode {
-  constructor(props: IRootNode) {
+  implements IProgram {
+  constructor(props: IProgram) {
     super(props)
   }
 }
