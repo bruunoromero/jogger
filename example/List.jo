@@ -2,4 +2,11 @@ module List
 
 import T.Teste
 
+type Int = Int
+type Double = Double
+
+type Bool
+    = True
+    | False
+
 def mapper() = 10

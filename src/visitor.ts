@@ -1,5 +1,5 @@
 import { List } from "immutable"
-import { ParserRuleContext } from "antlr4"
+import { ParserRuleContext, Token } from "antlr4"
 import { TerminalNode } from "antlr4/tree/Tree"
 
 import { JoggerVisitor } from "./parser/JoggerVisitor"
@@ -7,7 +7,8 @@ import {
   AsClauseContext,
   RecordFieldContext,
   MatchClauseContext,
-  ExprStmtContext
+  ExprStmtContext,
+  BlockOrExprContext
 } from "./parser/JoggerParser"
 import { BinOp, AccessOp } from "./node/binary_operator"
 import {
@@ -87,15 +88,35 @@ import {
   IModuleClauseContext,
   IImportClauseContext,
   IJoggerContext,
-  IAccessExprContext,
-  IRootStmtContext
+  IRootStmtContext,
+  IBlockOrExprContext,
+  IMatchClauseContext
 } from "./context_types"
 
-const locFromTerminal = (node: TerminalNode) =>
-  new NodePosition({ start: node.getSymbol(), end: node.getSymbol() })
+const startFromToken = (token: Token) => ({
+  line: token.line,
+  column: token.column + 1
+})
 
-export const locFromCtx = (ctx: ParserRuleContext) =>
-  new NodePosition({ start: ctx.start, end: ctx.stop })
+const endFromToken = (source: string, token: Token) => ({
+  line: token.line + source.split(new RegExp(/\n\r/)).length - 1,
+  column: source.length + token.column + 1
+})
+
+const locFromTerminal = (node: TerminalNode) => {
+  const symbol = node.getSymbol()
+  return new NodePosition({
+    start: startFromToken(symbol),
+    end: endFromToken(symbol.text, symbol)
+  })
+}
+
+export const locFromCtx = (ctx: ParserRuleContext) => {
+  return new NodePosition({
+    start: startFromToken(ctx.start),
+    end: endFromToken(ctx.getText(), ctx.stop)
+  })
+}
 
 export class Visitor extends JoggerVisitor {
   visit: (ctx: ParserRuleContext) => IBaseNode
@@ -113,7 +134,7 @@ export class Visitor extends JoggerVisitor {
     }
 
     this.visitExpr = this.makeVisitorFromOp(8)
-    this.visitOperatorExpr1 = this.makeVisitOp("accessExpr", 1)
+    this.visitOperatorExpr1 = this.makeVisitOp("primitive", 1)
   }
 
   makeVisitorFromOp(op: number) {
@@ -210,7 +231,11 @@ export class Visitor extends JoggerVisitor {
     return new GenericType({ loc: locFromTerminal(sym), name: sym.getText() })
   }
 
-  makeType(ctx: ParserRuleContext, node: IBaseNode, params: List<TypeNode>) {
+  makeType(
+    ctx: ParserRuleContext,
+    node: SymbolExpr | AccessOp | TypeNode,
+    params: List<TypeNode>
+  ) {
     const genericParams = params.filter(p =>
       NodeUtils.isInstance(p, NodeType.GENERIC_TYPE)
     )
@@ -424,7 +449,7 @@ export class Visitor extends JoggerVisitor {
       loc: locFromCtx(ctx),
       name: this.makeSymbol(ctx.SYMBOL()),
       params: this.visitParameterList(ctx.parameterList()),
-      value: this.visitBlockOrExpr(ctx.blockOrExpr()),
+      body: this.visitBlockOrExpr(ctx.blockOrExpr()),
       returnTypeSpec:
         ctx.parameterSpec() && this.visitParameterSpec(ctx.parameterSpec())
     })
@@ -465,7 +490,7 @@ export class Visitor extends JoggerVisitor {
   visitTypeDeclCtor(ctx: ITypeDeclCtorContext) {
     const fields = ctx.unnamedTypes()
       ? this.visitUnnamedTypes(ctx.unnamedTypes())
-      : List<IBaseNode>()
+      : List<TypeNode>()
 
     return new TypeCtor({
       fields,
@@ -483,6 +508,14 @@ export class Visitor extends JoggerVisitor {
       loc: locFromCtx(ctx),
       nodes: List(ctx.stmt().map(it => this.visitStmt(it)))
     })
+  }
+
+  visitBlockOrExpr(ctx: IBlockOrExprContext) {
+    if (ctx.block()) {
+      return this.visitBlock(ctx.block())
+    }
+
+    return this.visitExpr(ctx.expr())
   }
 
   // EXPRESSIONS
@@ -520,7 +553,7 @@ export class Visitor extends JoggerVisitor {
   }
 
   visitSymbolOrRecord(ctx: ISymbolOrRecordContext) {
-    const sym = this.makeSymbol(ctx.SYMBOL())
+    const sym = this.visitSymbolAccess(ctx.symbolAccess())
 
     if (ctx.recordFields()) {
       return new RecordExpr({
@@ -567,7 +600,7 @@ export class Visitor extends JoggerVisitor {
     return new MatchExpr({ loc: locFromCtx(ctx), matcher, clauses })
   }
 
-  visitMatchClause(ctx: MatchClauseContext) {
+  visitMatchClause(ctx: IMatchClauseContext) {
     const cond = this.visitExpr(ctx.expr())
     const truthy = this.visitBlockOrExpr(ctx.blockOrExpr())
 
@@ -582,14 +615,5 @@ export class Visitor extends JoggerVisitor {
       returnTypeSpec:
         ctx.parameterSpec() && this.visitParameterSpec(ctx.parameterSpec())
     })
-  }
-
-  visitAccess(ctx: IAccessExprContext): AccessOp {
-    return ctx
-      .primitive()
-      .map(prim => this.visitPrimitive(prim))
-      .reduce(
-        (left, right) => new AccessOp({ loc: locFromCtx(ctx), left, right })
-      )
   }
 }

@@ -1,7 +1,7 @@
 import { IBaseNode, NodeType } from "./base_nodes"
 import { Record, List } from "immutable"
 import { Expr, SymbolExpr } from "./expression_nodes"
-import { Parameter } from "./type_nodes"
+import { Parameter, TypeNode, GenericType } from "./type_nodes"
 
 export type RootStmtNode =
   | DeclStmt
@@ -16,7 +16,7 @@ export type StmtNode = DeclStmt | FnDeclStmt | BlockStmt | ExprStmt
 export interface IDeclStmt extends IBaseNode {
   name: SymbolExpr
   value: Expr | BlockStmt
-  typeSpec?: IBaseNode
+  typeSpec?: TypeNode
 }
 
 export class DeclStmt
@@ -36,9 +36,9 @@ export class DeclStmt
 
 export interface IFnDeclStmt extends IBaseNode {
   name: SymbolExpr
-  value: Expr | BlockStmt
-  params: List<IBaseNode>
-  returnTypeSpec: IBaseNode
+  body: Expr | BlockStmt
+  params: List<Parameter>
+  returnTypeSpec: TypeNode
   genericParams: List<IBaseNode>
 }
 
@@ -46,7 +46,7 @@ export class FnDeclStmt
   extends Record<IFnDeclStmt>({
     loc: null,
     name: null,
-    value: null,
+    body: null,
     params: List(),
     returnTypeSpec: null,
     genericParams: List(),
@@ -83,7 +83,7 @@ export class DataDeclStmt
 export interface ITypeDeclStmt extends IBaseNode {
   name: SymbolExpr
   constructors: List<TypeCtor>
-  genericParams: List<IBaseNode>
+  genericParams: List<GenericType>
 }
 
 export class TypeDeclStmt
@@ -103,7 +103,7 @@ export class TypeDeclStmt
 
 export interface ITypeCtor extends IBaseNode {
   name: SymbolExpr
-  fields: List<IBaseNode>
+  fields: List<TypeNode>
 }
 
 export class TypeCtor

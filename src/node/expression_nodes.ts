@@ -2,6 +2,7 @@ import { IBaseNode, NodeType } from "./base_nodes"
 import { Record, List } from "immutable"
 import { BinOp, AccessOp } from "./binary_operator"
 import { BlockStmt } from "./statement_nodes"
+import { TypeNode, Parameter } from "./type_nodes"
 
 export type Expr =
   | IntLiteral
@@ -106,8 +107,8 @@ export class ListExpr
 
 export interface IFnExpr extends IBaseNode {
   body: Expr | BlockStmt
-  params: List<IBaseNode>
-  returnTypeSpec: IBaseNode | null
+  params: List<Parameter>
+  returnTypeSpec: TypeNode | null
 }
 
 export class FnExpr
@@ -204,7 +205,7 @@ export class CallExpr
 }
 
 export interface IRecordExpr extends IBaseNode {
-  name: IBaseNode
+  name: SymbolExpr | AccessOp
   fields: List<RecordField>
 }
 

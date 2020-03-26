@@ -1,6 +1,7 @@
 import { NodeType, IBaseNode } from "./base_nodes"
 import { Record, List } from "immutable"
 import { SymbolExpr } from "./expression_nodes"
+import { AccessOp } from "./binary_operator"
 
 export type TypeNode = ConcreteType | AbstractType | GenericType | FnType
 
@@ -22,7 +23,7 @@ export class GenericType
 }
 
 export interface IAbstractType extends IBaseNode {
-  name: IBaseNode
+  name: SymbolExpr | AccessOp | TypeNode
   params: List<TypeNode>
 }
 
@@ -41,7 +42,7 @@ export class AbstractType
 }
 
 export interface IConcreteType extends IBaseNode {
-  name: IBaseNode
+  name: SymbolExpr | AccessOp | TypeNode
   params: List<TypeNode>
 }
 

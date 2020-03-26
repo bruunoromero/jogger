@@ -32,11 +32,11 @@ import {
   SymbolAccessContext,
   ImportClauseContext,
   JoggerContext,
-  AccessExprContext,
   ModuleClauseContext,
   RootStmtContext
 } from "./parser/JoggerParser"
 import { TerminalNode } from "antlr4/tree/Tree"
+import { IExprStmt } from "./node/statement_nodes"
 
 export interface IParametersContext extends ParametersContext {
   expr(): ExprContext[]
@@ -59,17 +59,18 @@ export interface IExposingClauseContext extends ExposingClauseContext {
 }
 
 export interface IIfExprContext extends IfExprContext {
-  blockOrExpr(i: number): BlockOrExprContext
+  blockOrExpr(i: number): IBlockOrExprContext
 }
 
 export interface IMatchExprContext extends MatchExprContext {
-  matchClause(): MatchClauseContext[]
+  matchClause(): IMatchClauseContext[]
 }
 
 export interface IFnDeclStmtContext extends FnDeclStmtContext {
   genericParams(): IGenericParamsContext
   parameterList(): IParameterListContext
   parameterSpec(): IParameterSpecContext
+  blockOrExpr(): IBlockOrExprContext
 }
 
 export interface IDataDeclStmtContext extends DataDeclStmtContext {
@@ -117,10 +118,7 @@ export interface IListContext extends ListContext {
 export interface IFnExpressionContext extends FnExpressionContext {
   parameterList(): IParameterListContext
   parameterSpec(): IParameterSpecContext
-}
-
-export interface IAccessExprContext extends AccessExprContext {
-  primitive(): IPrimitiveContext[]
+  blockOrExpr(): IBlockOrExprContext
 }
 
 export interface IStmtContext extends StmtContext {
@@ -136,6 +134,7 @@ export interface IRootStmtContext extends RootStmtContext {
 }
 
 export interface ISymbolOrRecordContext extends SymbolOrRecordContext {
+  symbolAccess(): ISymbolAccessContext
   recordFields(): IRecordFieldsContext
 }
 
@@ -188,4 +187,12 @@ export interface IJoggerContext extends JoggerContext {
   rootStmt(): IRootStmtContext[]
   importClause(): IImportClauseContext[]
   moduleClause(): IModuleClauseContext
+}
+
+export interface IBlockOrExprContext extends BlockOrExprContext {
+  block(): IBlockContext
+}
+
+export interface IMatchClauseContext extends MatchClauseContext {
+  blockOrExpr(): IBlockOrExprContext
 }

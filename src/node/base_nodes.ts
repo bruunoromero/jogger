@@ -38,8 +38,8 @@ export enum NodeType {
 }
 
 export interface INodePosition {
-  start: Token
-  end: Token
+  start: { line: number; column: number }
+  end: { line: number; column: number }
 }
 
 export class NodePosition

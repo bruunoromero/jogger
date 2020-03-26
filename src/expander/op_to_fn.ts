@@ -79,7 +79,7 @@ export const expandStmt = (stmt: RootStmtNode) => {
   if (stmt instanceof DeclStmt) {
     return stmt.update("value", expandBlockOrExpr)
   } else if (stmt instanceof FnDeclStmt) {
-    return stmt.update("value", expandBlockOrExpr)
+    return stmt.update("body", expandBlockOrExpr)
   } else if (stmt instanceof BlockStmt) {
     return stmt.update("nodes", it => it.map(expandStmt))
   } else if (stmt instanceof ExprStmt) {

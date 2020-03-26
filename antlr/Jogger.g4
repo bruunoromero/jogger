@@ -62,8 +62,7 @@ operatorExpr5: operatorExpr4 (operator5 s operatorExpr4)*;
 operatorExpr4: operatorExpr3 (operator4 s operatorExpr3)*;
 operatorExpr3: operatorExpr2 (operator3 s operatorExpr2)*;
 operatorExpr2: operatorExpr1 (operator2 s operatorExpr1)*;
-operatorExpr1: accessExpr (operator1 s accessExpr)*;
-accessExpr: primitive ('.' s primitive)*;
+operatorExpr1: primitive (operator1 s primitive)*;
 
 block: '{' stmt+ '}';
 
@@ -73,7 +72,7 @@ ifExpr: 'if' s '(' expr ')' blockOrExpr 'else' blockOrExpr;
 
 matchExpr: 'match' '(' expr ')' '{' matchClause+ '}';
 matchClause: 'case' expr '=>' blockOrExpr matchClauseEnd;
-matchClauseEnd : ';' NL* | NL+;
+matchClauseEnd: ';' NL* | NL+;
 
 fnExpression:
 	'fn' parameterList parameterSpec? '=>' blockOrExpr;
@@ -83,7 +82,7 @@ list: '[' (expr (',' expr)*)? ']';
 recordFields: '{' (recordField (',' recordField)*)? '}';
 recordField: SYMBOL ':' expr;
 
-symbolOrRecord: SYMBOL recordFields?;
+symbolOrRecord: symbolAccess recordFields?;
 
 primitive:
 	(
