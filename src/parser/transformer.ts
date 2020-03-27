@@ -31,7 +31,8 @@ import {
   FnDeclStmt,
   DataDeclStmt,
   TypeCtor,
-  TypeDeclStmt
+  TypeDeclStmt,
+  ExprStmt
 } from "../node/statement_nodes"
 import { ModuleClause, ImportClause } from "../node/clause_nodes"
 
@@ -372,8 +373,10 @@ export const makeOperatorExpr = ({ start, value: [first, tail], end }) => {
   if (tail.length === 0) {
     return first
   }
-  const ops = tail.filter((_, i) => i % 2 === 0)
-  const exprs = [first, ...tail.filter((_, i) => i % 2 !== 0)]
+
+  const flatTail = tail.flat()
+  const ops = flatTail.filter((_, i) => i % 2 === 0)
+  const exprs = [first, ...flatTail.filter((_, i) => i % 2 !== 0)]
 
   return exprs.reduce(
     (left, right, index) =>
@@ -385,3 +388,6 @@ export const makeOperatorExpr = ({ start, value: [first, tail], end }) => {
       })
   )
 }
+
+export const makeExprStmt = ({ start, value, end }) =>
+  new ExprStmt({ loc: new NodePosition({ start, end }), expr: value })

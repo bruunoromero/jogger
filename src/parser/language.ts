@@ -25,7 +25,8 @@ import {
   StmtNode,
   DataDeclStmt,
   TypeCtor,
-  TypeDeclStmt
+  TypeDeclStmt,
+  ExprStmt
 } from "../node/statement_nodes"
 import { AccessOp } from "../node/binary_operator"
 import {
@@ -178,7 +179,7 @@ interface LanguageSpec {
   ExposingClause: List<SymbolExpr> | boolean
   RootStmt: StmtNode
   Stmt: StmtNode
-  ExprStmt: Expr
+  ExprStmt: ExprStmt
   SymbolAccess: SymbolExpr | AccessOp
   DeclStmt: DeclStmt
   FnDeclStmt: FnDeclStmt
@@ -312,7 +313,7 @@ export const language = P.createLanguage<LanguageSpec>({
       r.ExprStmt
     ).skip(r.StmtEnd),
   Stmt: r => P.alt(r.ExprStmt, r.DeclStmt, r.FnDeclStmt).skip(r.StmtEnd),
-  ExprStmt: r => r.Expr,
+  ExprStmt: r => r.Expr.mark().map(t.makeExprStmt),
   DeclStmt: r =>
     P.seqObj<DeclStmtContext>(
       P.string("let").trim(P.optWhitespace),

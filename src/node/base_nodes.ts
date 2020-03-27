@@ -1,8 +1,7 @@
 import { Record, List } from "immutable"
 
-import { Token } from "antlr4"
-import { ModuleClause, ImportClause } from "./clause_nodes"
 import { RootStmtNode } from "./statement_nodes"
+import { ModuleClause, ImportClause } from "./clause_nodes"
 
 export enum NodeType {
   INT_LITERAL,
@@ -11,7 +10,6 @@ export enum NodeType {
   STRING_LITERAL,
   LIST_EXPR,
   SYMBOL_EXPR,
-  ROOT,
   BLOCK_STMT,
   BIN_OP,
   ACCESS_OP,
