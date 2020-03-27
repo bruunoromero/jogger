@@ -1,23 +1,37 @@
 import { List } from "immutable"
-import { InputStream, CommonTokenStream } from "antlr4"
 
 import * as IO from "./io"
-import { Visitor } from "./visitor"
 import { File } from "./file"
-import { IJoggerContext } from "./context_types"
-import { JoggerParser } from "./parser/JoggerParser"
-import { JoggerLexer } from "./parser/JoggerLexer"
 import { ProjectConfig } from "./project_config"
 import { ImportClause } from "./node/clause_nodes"
+import { SymbolExpr } from "./node/expression_nodes"
+import { AccessOp } from "./node/binary_operator"
+import { Program } from "./node/base_nodes"
+import { language } from "./parser/language"
+
+const withCore = (program: Program) => {
+  if (program.module.name.str() === "Jogger.Core") {
+    return program
+  }
+
+  return program.update("imports", imp =>
+    imp.push(
+      new ImportClause({
+        loc: null,
+        exposing: List(),
+        isImportAll: true,
+        name: new AccessOp({
+          loc: null,
+          left: new SymbolExpr({ loc: null, value: "Jogger" }),
+          right: new SymbolExpr({ loc: null, value: "Core" })
+        })
+      })
+    )
+  )
+}
 
 export const parse = (filename: string, source: string): File => {
-  const inputStream = new InputStream(source)
-  const lexer = new JoggerLexer(inputStream)
-  const tokenStream = new CommonTokenStream(lexer)
-  const parser = new JoggerParser(tokenStream)
-  const visitor = new Visitor()
-
-  const program = visitor.visitJogger(parser.jogger() as IJoggerContext)
+  const program = withCore(language.Jogger.tryParse(source))
 
   return new File({ filename, source, program })
 }

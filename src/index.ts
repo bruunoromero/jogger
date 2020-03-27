@@ -16,7 +16,7 @@ const main = async () => {
     const curriedGraph = Currier.expandAll(expandedGraph)
     const refGraph = Ref.expandAll(curriedGraph)
 
-    // console.log(refGraph.toJS().deps[0].value.program.stmts[0].params[0])
+    console.log(refGraph.toJS())
   } catch (e) {
     console.error(e)
   }

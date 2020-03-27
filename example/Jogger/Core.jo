@@ -1,6 +1,4 @@
-module List
-
-import T.Teste
+module Jogger.Core
 
 type Int = Int
 type Double = Double
@@ -9,4 +7,4 @@ type Bool
     = True
     | False
 
-def mapper() = 10
+let (++) = 10

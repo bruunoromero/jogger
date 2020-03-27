@@ -11,6 +11,8 @@ parameterList: '(' s (parameter (',' s parameter)* s)? ')';
 parameterSpec: ':' s parameterType;
 parameter: SYMBOL s parameterSpec;
 
+declName: SYMBOL | '(' operator ')';
+
 // RULES
 
 jogger: moduleClause importClause* rootStmt*;
@@ -35,10 +37,12 @@ stmt: ( exprStmt | declStmt | fnDeclStmt) stmtEnd;
 
 exprStmt: expr;
 
-declStmt: 'let' s SYMBOL parameterSpec? s '=' s expr;
+declStmt: 'let' s declName parameterSpec? s '=' s expr;
 
 fnDeclStmt:
-	'def' s SYMBOL genericParams? parameterList parameterSpec? s '=' s blockOrExpr;
+	'def' s declName (s genericParams)? s parameterList (
+		s parameterSpec
+	)? s '=' s blockOrExpr;
 
 dataDeclStmt: 'data' s SYMBOL s genericParams? parameterList;
 
@@ -54,7 +58,7 @@ parameterTypeParams: '[' parameterType (',' parameterType)* ']';
 
 genericParams: '[' GENERIC (',' GENERIC)* ']';
 
-expr: operatorExpr7 (operator8 operatorExpr7)*;
+expr: operatorExpr7 (operator8 s operatorExpr7)*;
 
 operatorExpr7: operatorExpr6 (operator7 s operatorExpr6)*;
 operatorExpr6: operatorExpr5 (operator6 s operatorExpr5)*;
@@ -110,19 +114,20 @@ GENERIC: '\'' [a-z]+;
 
 INT: '-'? DIGIT+;
 FLOAT: '-'? DIGIT+ '.' DIGIT+;
-// SYMBOL : [a-zA-Z][a-zA-Z0-9_?!$]*;
-SYMBOL: OPERATOR;
+SYMBOL: [a-zA-Z_?!$+]+;
 STRING: '"' ( ~'"' | '\\' '"')* '"';
 CHAR: '\'' (PRINTABLE_CHAR | CHAR_ESCAPE_SEQ) '\'';
 
-operator1: ('*' | '/' | '%') SYMBOL?;
-operator2: ('+' | '-') SYMBOL?;
-operator3: ':' SYMBOL?;
-operator4: ('=' | '!') SYMBOL?;
-operator5: ('<' | '>') SYMBOL?;
-operator6: '&' SYMBOL?;
-operator7: '^' SYMBOL?;
-operator8: '|' SYMBOL?;
+operator: '+';
+
+operator1: ('*' | '/' | '%') operator?;
+operator2: ('+' | '-') operator?;
+operator3: ':' operator?;
+operator4: ('=' | '!') operator?;
+operator5: ('<' | '>') operator?;
+operator6: '&' operator?;
+operator7: '^' operator?;
+operator8: '|' operator?;
 
 ALL_SYM: '..';
 

@@ -4,26 +4,27 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "yarn generate-parser && npx tsc",
-    "lint": "npx tslint -c tslint.json 'src/**/*.ts'",
+    "build": "npx tsc",
+    "test": "jest --coverage",
     "lint:fix": "npx tslint --fix -c tslint.json 'src/**/*.ts'",
-    "generate-parser": "antlr4-tool -o src/parser antlr/Jogger.g4"
+    "lint": "npx tslint -c tslint.json 'src/**/*.ts' 'tests/**/*.ts'"
   },
   "dependencies": {
     "@babel/code-frame": "^7.8.3",
-    "antlr4": "^4.8.0",
-    "antlr4-tool": "^1.0.26",
     "colors": "^1.4.0",
     "immutable": "^4.0.0-rc.12",
+    "nearly": "^1.8.1",
+    "parsimmon": "^1.13.0",
     "ramda": "^0.27.0",
     "tsort": "^0.0.1",
     "typescript-monads": "^3.16.0"
   },
   "devDependencies": {
-    "@types/antlr4": "^4.7.0",
     "@types/babel-code-frame": "^6.20.2",
+    "@types/jest": "^25.1.4",
     "@types/node": "^13.9.2",
-    "jest": "^25.1.0",
+    "@types/parsimmon": "^1.10.1",
+    "jest": "^25.2.2",
     "prettier": "1.19.1",
     "ts-jest": "^25.2.1",
     "ts-node": "^8.6.2",

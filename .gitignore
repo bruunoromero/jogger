@@ -1,4 +1,6 @@
 dist/
 .antlr/
+coverage/
 src/parser
 node_modules/
+*.log
